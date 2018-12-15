@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="shortcut icon" href="flappy.ico">	<title>zan_flappy</title>
+
+<style type="text/css">
+		#canvas{
+			position: relative;
+			left: 20%;
+			border: 2px solid;
+			width: 800px;
+			height: 500px;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="canvas">brows</canvas>
+
+
+
+
+<script type="text/javascript">
+	
+
+	var backS= new Audio();
+	backS.src="audio/march.m4a";
+
+	var death= new Audio();
+	death.src="audio/Crash.wav";
+
+	var wings= new Audio();
+	wings.src="audio/wing.wav";
+
+
+	var woosh= new Audio();
+	woosh.src="audio/swoosh.wav";
+
+
+	var pointed= new Audio();
+	pointed.src="audio/point.wav";
+
+	var monster1= new Image();
+	 monster1.src="image/1.png";
+
+
+	var monster2= new Image();
+	 monster2.src="image/2.png", width=200;
+
+	 var bg= new Image();
+	 bg.src="image/BG.jpg";
+
+	  var judul= new Image();
+	 judul.src="image/za.png";
+
+	 var gambarTiang= new Image();
+	 gambarTiang.src="image/pipe.png";
+
+	 var message1 = new Image();
+	 message1.src="image/message.png"
+
+	 var game_over= new Image();
+	 game_over.src="image/gameover.png";
+
+	  var die= new Image();
+	 die.src="image/3.png";
+
+	function mulaiKanvas(){
+	var canvas= document.getElementById('canvas');
+	var ctx= canvas.getContext('2d');
+
+	canvas.width=canvas.scrollWidth;
+	canvas.height=canvas.scrollHeight;
+
+	var cW=canvas.width;
+	var cH=canvas.height;
+
+	var Xbg=0, start=false,z=180;
+	var inSplash= setInterval(splash,30);
+function splash(){
+	ctx.clearRect(0,0,cW,cH);
+	ctx.drawImage(bg,Xbg-=2,0);
+	if (Xbg==-1598){
+		Xbg=0;
+	}
+
+	ctx.font="Bold 20px arial";
+	ctx.drawImage(judul,5,12);
+	ctx.drawImage(monster1,350,z+=2,80,80);
+	ctx.drawImage(message1,300,300);
+
+	if(z>=230){
+		z=180;
+	}
+}
+	
+
+	document.addEventListener('click',function(event){
+		if(start==false){
+			start=true;
+			clearInterval(inSplash);
+			utama();
+			backS.play();
+
+		}
+	})
+
+
+function utama(){
+	var gantiGambar=false;
+
+	function BG(){
+		this.x=0;
+		this.render=function(){
+		ctx.drawImage(bg,this.x--,0);
+		if (this.x==-1599) {
+			this.x=0;
+
+			}
+		}
+	}
+	var latar=new  BG();
+	function Karakter(){
+		this.x=100;this.y=200; this.w=40,this.h=80,this.i=0,height=900;
+		this.render=function(){
+			if(gantiGambar){
+
+			ctx.drawImage(monster2,this.x,this.y+=5,100,100);
+			
+			this.i++;
+			if(this.i==5){
+				gantiGambar=false;
+				this.i=0;
+				wings.play();
+			}
+			}else{
+				ctx.drawImage(monster1,this.x,this.y+=5,100,100);
+
+			}
+			}
+		}
+		var karakter= new Karakter();
+
+		var tiang=[];//agar ketika dimainkan posisi tiang berbeda-beda zandri
+		tambahTiang();
+
+
+		function tambahTiang(){
+			var x=900, y=0,w=50,h=300;
+			var acak=Math.floor(Math.random()*250);
+			tiang.push({"x":x,"y":y-acak,"w":w,"h":h});
+		}
+
+		var hitung=0;
+
+		function selesai(){
+			clearInterval(interval);
+			ctx.clearRect(0,0,cW,cH);
+			latar.render();
+			renderTiang();
+			ctx.drawImage(die,karakter.x,karakter.y,100,100);
+			ctx.font="Bold 50px arial";
+			death.play();
+			ctx.drawImage(game_over,300,100);
+			ctx.font="Bold 20px arial";
+			ctx.fillText("refresh this page for play again",250,275);
+			ctx.fillText("your_score = "+score,320,250);
+			
+
+
+
+
+		}
+		var score=0; tambahPoint=true
+		function tambahScore(){
+			score++;
+			pointed.play();
+
+		}
+		function senggol(){
+			for(var i = 0;i<tiang.length;i++){
+				var t=tiang[i];
+			if((karakter.x+karakter.w>t.x && karakter.y<t.y+t.h && karakter.x<t.x+t.w)||(karakter.x+karakter.w>t.x && karakter.y+karakter.h>t.y+t.h+200 && karakter.x<t.x+t.w)){
+				selesai();
+
+
+
+			}else if(t.x+t.w<karakter.x){
+				if (tambahPoint) {
+					tambahScore();
+					tambahPoint=false;
+				}
+
+			}
+			}
+			if (karakter.y<=0){
+				selesai();
+
+			}
+			if (karakter.y+karakter.h>cH){
+				selesai();
+			}
+		}
+
+		function renderTiang(){
+			for (var i =0;i<tiang.length;i++) {
+				 var t=tiang[i];
+				 ctx.drawImage(gambarTiang,t.x--,t.y);
+				 ctx.drawImage(gambarTiang,t.x--,t.y+t.h+200);
+
+				 if(t.x+t.w<10){
+				 	tiang.splice(i,1);
+				 	tambahPoint=true;
+				 }
+			}
+			hitung++;
+			if(hitung==170){
+				tambahTiang();
+				hitung=0;
+			}
+		}
+
+
+		function animasi(){
+			ctx.save();
+			ctx.clearRect(0,0,cW,cH);
+
+			latar.render();
+			renderTiang();
+			karakter.render();
+			senggol();
+			ctx.restore();
+			ctx.font="Normal 30px arial";
+			ctx.fillText("Score="+score,20,20);
+		}
+
+		var interval= setInterval(animasi,30);
+
+
+
+
+
+		ctx.canvas.addEventListener('click',function(event){
+			karakter.y-=70;
+			gantiGambar=true;
+			woosh.play();
+			})
+	}//end
+
+}
+
+
+
+ 
+
+ window.addEventListener('load',function(event){
+ 	mulaiKanvas()
+ });
+</script>
+</body>
+</html>
